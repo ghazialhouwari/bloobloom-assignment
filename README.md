@@ -1,52 +1,47 @@
-# Nuxt 3 Minimal Starter
+# Bloobloom Assignment
 
-Look at the [Nuxt 3 documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+Visit [https://bloobloom.ghazi.dev/](https://bloobloom.ghazi.dev/) to view the assignment live.
+
+## Table of contents
+* [Tech Stack](#tech-stack)
+* [Folder Structure](#folder-structure)
+* [Setup](#setup)
+
+## Tech Stack
+
+* Nuxt3
+* Vue3
+* TailwindCSS
+* Typescript
+
+## Folder Structure
+
+    .
+    ├── build
+    ├── assets
+    │   └── css
+    │       └── tailwind.css        
+    ├── components
+    │   └── CollectionItemCard.vue
+    ├── pages
+    │   └── index.vue
+    ├── utils
+    │   └── types.ts                # Typescript interfaces
+    ├── nuxt.config.ts
+    ├── package.json
+    ├── tailwind.config.js
+    ├── tsconfig.json
+    ├── LICENSE
+    └── README.md
 
 ## Setup
-
-Make sure to install the dependencies:
-
 ```bash
-# yarn
-yarn install
-
-# npm
+# Install the dependencies:
 npm install
 
-# pnpm
-pnpm install --shamefully-hoist
-```
-
-## Development Server
-
-Start the development server on http://localhost:3000
-
-```bash
+# Start the development server on http://localhost:3000
 npm run dev
-```
 
-## Production
-
-Build the application for production:
-
-```bash
+# Build the application for production:
 npm run build
-```
-
-Locally preview production build:
-
-````bash
-npm run preview
-```
-
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
-
-To run MongoDB:
-```bash
-brew services start mongodb-community@6.0
-```
-
-To stop a mongod running:
-```bash
-brew services stop mongodb-community@6.0
 ```
