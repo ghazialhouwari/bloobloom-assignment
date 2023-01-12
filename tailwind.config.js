@@ -5,6 +5,9 @@ module.exports = {
     content: [],
     theme: {
         extend: {
+            fontFamily: {
+                sans: ["Times"]
+            },
             colors: {
                 primary: {
                     DEFAULT: '#2876d3',

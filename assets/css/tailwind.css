@@ -1,3 +1,10 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.siteContainer {
+    @apply container mx-auto;
+}
+.siteDivider__horizontal {
+    @apply border-l border-black h-full inline-flex;
+}
