@@ -11,7 +11,7 @@
                     class="MenuList__item MenuList__item--back"
                 >
                     <div class="MenuList__item__icon">
-                        <Icon name="mdi:chevron-left" size="24px" />
+                        <Icon name="mdi:chevron-left" size="30px" />
                     </div>
                     <div class="MenuList__item__content">
                         <div class="MenuList__item__title">Go back</div>
@@ -33,7 +33,7 @@
                             <div class="MenuList__item__title">{{ item.name }}</div>
                         </div>
                         <div class="MenuList__item__icon">
-                            <Icon name="mdi:chevron-right" size="24px" />
+                            <Icon name="mdi:chevron-right" size="30px" />
                         </div>
                     </div>
                     <div
