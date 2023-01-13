@@ -17,6 +17,8 @@
                 </NuxtLink>
             </h1>
             <a
+                target="_blank"
+                rel="noopener"
                 class="SiteHeader__btn Github__btn"
                 href="https://github.com/ghazialhouwari/bloobloom-assignment"
             >
