@@ -38,37 +38,38 @@
         <SideMenuGroup
             :showMenu="showMenu"
             @closeSideMenu="closeSideMenu"
+            @selectCollection="selectCollection"
         />
         <!-- Collection Items -->
         <section class="SiteCollection">
             <header class="SiteCollection__header">
                 <div class="hidden xl:block"></div>
-                <h2 class="SiteCollection__header--title"><span>SPECTACLES WOMEN</span></h2>
+                <h2 class="SiteCollection__header--title"><span>{{ selectedCollection.replace('-', ' ') }}</span></h2>
                 <div class="SiteCollection__btnGroup">
                     <div class="SiteCollection__menu">
                         <button
                             class="SiteCollection__btn"
                             aria-haspopup="true"
-                            :aria-expanded="showColors"
-                            @click="toggleShowColors"
+                            :aria-expanded="showColours"
+                            @click="toggleShowColours"
                         >COLOUR</button>
-                        <div v-if="showColors" class="SiteCollection__menu__content" role="menu">
+                        <div v-if="showColours" class="SiteCollection__menu__content" role="menu">
                             <ul class="grid grid-cols-3 grid-rows-2 gap-3 align-center capitalize">
                                 <li
-                                    v-for="color in colors"
-                                    :key="color.name"
+                                    v-for="colour in colours"
+                                    :key="colour.name"
                                     class="FilterList flex items-center"
-                                    @click="filterCollection"
+                                    @click="toggleColourSelection(colour.name)"
                                 >
-                                    <span class="FilterList__color">
+                                    <span class="FilterList__colour" :class="{'FilterList__colour--selected': selectedColours.includes(colour.name)}">
                                         <span
                                             :style="{
-                                                background: color.val.startsWith('#') ? color.val : `url('https://d32y5z2afvomc1.cloudfront.net/assets/${color.val}')`
+                                                background: colour.val.startsWith('#') ? colour.val : `url('https://d32y5z2afvomc1.cloudfront.net/assets/${colour.val}')`
                                             }"
                                             class="inline-flex w-full h-full rounded-full mx-w-full"
                                         ></span>
                                     </span>
-                                    <span>{{ color.name }}</span>
+                                    <span>{{ colour.name }}</span>
                                 </li>
                             </ul>
                         </div>
@@ -85,98 +86,37 @@
                                 <li
                                     v-for="shape in shapes"
                                     :key="shape"
-                                    class="FilterList hover:underline"
-                                    @click="filterCollection"
+                                    class="FilterList FilterList__shape"
+                                    :class="{'FilterList__shape--selected': selectedShapes.includes(shape)}"
+                                    @click="toggleShapeSelection(shape)"
                                 >{{ shape }}</li>
                             </ul>
                         </div>
                     </div>
                 </div>
             </header>
-            <div class="SiteCollection__items">
-                <CollectionItemCard
-                    v-for="(collectionItem, index) in collectionItems"
+            <!-- TODO: show loading while it's pending -->
+            <div v-if="!pending" class="SiteGlass__cards">
+                <GlassCard
+                    v-for="(glass, index) in glassesResponse?.glasses"
                     :key="index"
                     :index="index"
-                    :collectionItem="collectionItem"
+                    :glass="glass"
                 />
             </div>
+            <!-- TODO: Show selected filters and the ability to remove -->
         </section>
     </main>
 </template>
 
 <script setup lang="ts">
-    import { reactive, ref, onMounted, computed } from 'vue';
-    import { CollectionItem, KeyValuePair } from '~~/utils/types';
+    import { reactive, ref, onMounted } from 'vue';
+    import { GlassesResponse, KeyValuePair } from '~~/utils/types';
     import { useTouch } from '~~/composables/touch';
 
     const { isTouchDevice } = useTouch();
-
-    let showMenu = ref<boolean>(false);
-    const collectionItems: CollectionItem[] = reactive([
-        {
-            name: 'TRAVELLER',
-            image: 'https://d32y5z2afvomc1.cloudfront.net/glass_variants/255304141618fba6685e2c93efb2f3f9dc80eece.jpg'
-        },
-        {
-            name: 'TRAVELLER',
-            image: 'https://d32y5z2afvomc1.cloudfront.net/glass_variants/30d1d6add5b6b7d6aec234db7fae11e96e2d6d87.jpg'
-        },
-        {
-            name: 'TRAVELLER',
-            image: 'https://d32y5z2afvomc1.cloudfront.net/glass_variants/db8042cf959ef7b066b4ec23c1b94b74087426f1.jpg'
-        },
-        {
-            name: 'TRAVELLER',
-            image: 'https://d32y5z2afvomc1.cloudfront.net/glass_variants/eecd10e642aed94407025cbfba544349fe6523a0.jpg'
-        },
-        {
-            name: 'TRAVELLER',
-            image: 'https://d32y5z2afvomc1.cloudfront.net/glass_variants/87abac6cfd396c2049ef0463d3bf5b1be87f949d.jpg'
-        },
-        {
-            name: 'TRAVELLER',
-            image: 'https://d32y5z2afvomc1.cloudfront.net/glass_variants/ef02088390ddac03e1c29010c38e7e34ded1335f.jpg'
-        },
-        {
-            name: 'TRAVELLER',
-            image: 'https://d32y5z2afvomc1.cloudfront.net/glass_variants/52909df1a68f78b545a301f89f3e9b23346f16c6.jpg'
-        },
-        {
-            name: 'TRAVELLER',
-            image: 'https://d32y5z2afvomc1.cloudfront.net/glass_variants/082e9b3123b30f01381a509a45dcbcad281ef2fa.jpg'
-        },
-        {
-            name: 'TRAVELLER',
-            image: 'https://d32y5z2afvomc1.cloudfront.net/glass_variants/f012da499ce6a985df3c7a430a3d17499c46d726.jpg'
-        },
-        {
-            name: 'TRAVELLER',
-            image: 'https://d32y5z2afvomc1.cloudfront.net/glass_variants/85dab5dfcdc85a583fe685cc78dad18f5609f7b4.jpg'
-        },
-        {
-            name: 'TRAVELLER',
-            image: 'https://d32y5z2afvomc1.cloudfront.net/glass_variants/9226835627e60c3f78165f02c96522bc825edb37.jpg'
-        },
-        {
-            name: 'TRAVELLER',
-            image: 'https://d32y5z2afvomc1.cloudfront.net/glass_variants/c3d8fdce5e3d407e6ac38a1b67dd1cec8e339a56.jpg'
-        },
-        {
-            name: 'TRAVELLER',
-            image: 'https://d32y5z2afvomc1.cloudfront.net/glass_variants/ab3cd37bf33ae9110d2f7eef21c375d1a2697336.jpg'
-        },
-        {
-            name: 'TRAVELLER',
-            image: 'https://d32y5z2afvomc1.cloudfront.net/glass_variants/6e287c02d2c742c3989f94618f45d634823f4ba6.jpg'
-        },
-        {
-            name: 'TRAVELLER',
-            image: 'https://d32y5z2afvomc1.cloudfront.net/glass_variants/6c572eb6b662dd5131fd7eef507645b26b1e76fc.jpg'
-        },
-    ]);
-
-    const colors: KeyValuePair[] = reactive([
+    const showMenu = ref<boolean>(false);
+    const colours: KeyValuePair[] = reactive([
         { name: 'black', val: '#000000' },
         { name: 'tortoise', val: 'filters_tortoise_02.png' },
         { name: 'coloured', val: 'filters_coloured_03.png' },
@@ -185,19 +125,51 @@
         { name: 'bright', val: '#d58e35' },
     ]);
     const shapes = ref<string[]>(['square', 'rectangle', 'round', 'cat-eye']);
-    const showColors = ref<boolean>(false);
+    const selectedColours: string[] = reactive(['coloured']);
+    const selectedShapes: string[] = reactive(['round']);
+    const selectedCollection = ref<string>('spectacles-women');
+    const showColours = ref<boolean>(false);
     const showShapes = ref<boolean>(false);
+    const pageNumber = ref<number>(1);
 
+    // fetch glasses from api
+    const { data: glassesResponse, pending, refresh } = await useLazyFetch<GlassesResponse>(getGlassListingURI, {
+        watch:[selectedColours, selectedShapes, selectedCollection]
+    });
+
+    // cache side menu and it's trigger
     let sideMenuGroup:HTMLElement|null = null;
     let sideMenuTrigger:HTMLElement|null = null;
-
     onMounted(() => {
         sideMenuGroup = document.querySelector('#SideMenuGroup');
         sideMenuTrigger = document.querySelector('#sideMenuTrigger');
     });
 
-    const toggleShowColors = (): void => {
-        showColors.value = !showColors.value;
+    // Build and return listing uri
+    function getGlassListingURI(): string {
+        // build query params;
+        const colourFilters: string[] = selectedColours.map(colour => {
+            return `filters[glass_variant_frame_variant_colour_tag_configuration_names][]=${colour}`;
+        });
+        const shapeFilters: string[] = selectedShapes.map(shape => {
+            return `filters[glass_variant_frame_variant_frame_tag_configuration_names][]=${shape}`;
+        });
+        const queryParams = [
+            'sort[type]=collection_relations_position',
+            'sort[order]=asc',
+            'filters[lens_variant_prescriptions][]=fashion',
+            'filters[lens_variant_types][]=classic',
+            'page[limit]=12',
+            `page[number]=${pageNumber.value}`,
+            ...colourFilters,
+            ...shapeFilters,
+            'filters[frame_variant_home_trial_available]=false',
+        ].join('&');
+        return `https://api.bloobloom.com/user/v1/sales_channels/website/collections/${selectedCollection.value}/glasses?${queryParams}`;
+    }
+
+    const toggleShowColours = (): void => {
+        showColours.value = !showColours.value;
         // close shapes filter if opened
         if (showShapes.value) {
             showShapes.value = false;
@@ -205,9 +177,9 @@
     };
     const toggleShowShapes = (): void => {
         showShapes.value = !showShapes.value;
-        // close colors filter if opened
-        if (showColors.value) {
-            showColors.value = false;
+        // close colours filter if opened
+        if (showColours.value) {
+            showColours.value = false;
         }
     };
     const toggleSideMenu = (): void => {
@@ -222,16 +194,35 @@
             showMenu.value = false;
         }
     };
-    const filterCollection = (): void => {
-
+    const toggleShapeSelection = (shape: string): void => {
+        const shapeIndex = selectedShapes.indexOf(shape);
+        if (shapeIndex >= 0) {
+            selectedShapes.splice(shapeIndex, 1);
+        } else {
+            selectedShapes.push(shape);
+        }
+    };
+    const toggleColourSelection = (colour: string): void => {
+        const colourIndex = selectedColours.indexOf(colour);
+        if (colourIndex >= 0) {
+            selectedColours.splice(colourIndex, 1);
+        } else {
+            selectedColours.push(colour);
+        }
+    };
+    const selectCollection = (link: string): void => {
+        selectedCollection.value = link;
+        showMenu.value = false;
     };
     defineExpose({
         toggleSideMenu,
         openSideMenu,
         closeSideMenu,
-        toggleShowColors,
+        toggleShowColours,
         toggleShowShapes,
-        filterCollection,
+        toggleShapeSelection,
+        toggleColourSelection,
+        selectCollection,
     });
 </script>
 
@@ -286,7 +277,7 @@
         height: calc(calc(var(--site-header-height-xs) * 2) + 10px);
     }
     .SiteCollection__header--title {
-        @apply text-lg xl:text-2xl font-black h-full flex justify-center items-center xl:border-l md:border-r;
+        @apply text-lg xl:text-2xl font-black h-full flex justify-center items-center xl:border-l md:border-r uppercase;
     }
     .SiteCollection__btnGroup {
         @apply flex justify-start border-t md:border-0;
@@ -315,10 +306,15 @@
     .FilterList {
         @apply text-center cursor-pointer;
     }
-    .FilterList__color {
+    .FilterList__colour {
         @apply inline-flex w-5 h-5 p-px rounded-full mr-2 overflow-hidden;
     }
-    .FilterList:hover .FilterList__color {
+    .FilterList__shape:hover,
+    .FilterList__shape--selected {
+        @apply underline
+    }
+    .FilterList:hover .FilterList__colour,
+    .FilterList__colour--selected {
         @apply border;
     }
 </style>

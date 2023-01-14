@@ -5,7 +5,7 @@
                 <div
                     v-if="isSubMenu"
                     @click="$emit('popMenu')"
-                    :tabindex="props.menu.length"
+                    :tabindex="showMenu ? 1 : -1"
                     role="option"
                     aria-selected="false"
                     class="MenuList__item MenuList__item--back"
@@ -18,12 +18,12 @@
                     </div>
                 </div>
                 <template
-                    v-for="(item, index) of props.menu"
+                    v-for="item of props.menu"
                     :key="item.name"
                 >
                     <div
-                        v-if="item.subMenu"
-                        :tabindex="index"
+                        v-if="item.subMenu.length"
+                        :tabindex="props.showMenu ? 1 : -1"
                         role="option"
                         aria-selected="false"
                         class="MenuList__item"
@@ -42,6 +42,7 @@
                         role="option"
                         aria-selected="false"
                         class="MenuList__item"
+                        @click="$emit('selectCollection', item.link)"
                     >
                         <div class="MenuList__item__content">
                             <div class="MenuList__item__title">{{ item.name }}</div>
@@ -54,15 +55,16 @@
 </template>
 
 <script setup lang="ts">
-    import { CollectionMenu } from '~~/utils/types';
+    import { Collection } from '~~/utils/types';
 
     interface Props {
-        menu: CollectionMenu[],
+        menu: Collection[],
         isSubMenu: boolean,
         index: number,
+        showMenu: boolean,
     }
     const props = defineProps<Props>();
-    defineEmits(['pushMenu', 'popMenu']);
+    defineEmits(['pushMenu', 'popMenu', 'selectCollection']);
 </script>
 
 <style>

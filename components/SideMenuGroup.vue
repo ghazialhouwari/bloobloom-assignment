@@ -1,5 +1,6 @@
 <template>
     <div 
+        v-if="!pending"
         id="SideMenuGroup"
         class="SideMenu__group"
         @mouseleave="closeSideMenu"
@@ -10,12 +11,14 @@
         >
             <Menu
                 v-for="(menu, index) in sideMenus"
-                :key="menu[0].name"
+                :key="`sideMenu_${index}`"
                 :menu="menu"
                 :index="index"
                 :isSubMenu="index > 0"
+                :showMenu="props.showMenu"
                 @pushMenu="pushMenu"
                 @popMenu="popMenu"
+                @selectCollection="link => $emit('selectCollection', link)"
             />
         </TransitionGroup>
     </div>
@@ -23,47 +26,49 @@
 
 <script setup lang="ts">
     import { reactive, watch } from 'vue';
-    import { CollectionMenu } from '~~/utils/types';
+    import { Collection, CollectionsResponse } from '~~/utils/types';
+    import { getProxyValue } from '~~/utils/functions';
     
     interface Props {
         showMenu: boolean,
     }
     const props = defineProps<Props>();
-    const emit = defineEmits(['closeSideMenu']);
+    const emit = defineEmits(['closeSideMenu', 'selectCollection']);
 
-    const sideMenuInitial: CollectionMenu[][] = [
-        [
-            {
-                name: 'men',
-                subMenu: [
-                    {
-                        id: 4,
-                        name: 'sunglasses',
-                    },
-                    {
-                        id: 2,
-                        name: 'spectacles',
-                    }
-                ]
-            },
-            {
-                name: 'women',
-                subMenu: [
-                    {
-                        id: 3,
-                        name: 'sunglasses',
-                    },
-                    {
-                        id: 1,
-                        name: 'spectacles',
-                    }
-                ]
-            },
-        ]
-    ];
-
-    const sideMenus: CollectionMenu[][] = reactive(sideMenuInitial);
-    const pushMenu = (subMenu: CollectionMenu[]): void => {
+    // fetch collection menu data from api then re-format it
+    const { data: collectionsResponse, pending } = await useLazyFetch('https://staging-api.bloobloom.com/user/v1/sales_channels/website/collections');
+    const collections: Collection[] = formatCollections(getProxyValue(collectionsResponse.value));
+    let sideMenus: Collection[][] = reactive([ collections ]);
+    
+    watch(() => props.showMenu, (nVal) => {
+        if (!nVal) {
+            resetMenu();
+        }
+    });
+    // re-format the collection response to Collection Interface
+    // to make dynamic side menu where it's possible to push menus with infinite sub levels (currently supports 2)
+    function formatCollections (collectionsResponse: CollectionsResponse): Collection[] {
+        let formattedCollections: Collection[] = [];
+        for (let collection of collectionsResponse.collections) {
+            const [type, name] = collection.configuration_name.split('-');
+            const collectionIndex: number = formattedCollections.findIndex((item: Collection) => item.name === name);
+            const subMenu = {
+                link: collection.configuration_name,
+                name: type,
+                subMenu: []
+            };
+            if (collectionIndex >= 0) {
+                formattedCollections[collectionIndex].subMenu.push(subMenu);
+            } else {
+                formattedCollections.push({
+                    name,
+                    subMenu: [ subMenu ],
+                });
+            }
+        }
+        return formattedCollections;
+    }
+    const pushMenu = (subMenu: Collection[]): void => {
         sideMenus.push(subMenu);
     };
     const popMenu = (): void => {
@@ -75,11 +80,6 @@
     const closeSideMenu = (evt: MouseEvent): void => {
         emit('closeSideMenu', evt);
     };
-    watch(() => props.showMenu, (nVal) => {
-        if (!nVal) {
-            resetMenu();
-        }
-    });
     defineExpose({
         pushMenu,
         popMenu,
