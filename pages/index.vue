@@ -10,7 +10,7 @@
                 @click="toggleSideMenu"
             >
                 <span
-                    v-if="isTouchDevice && showMenu && isMobile"
+                    v-if="isTouchDevice && showMenu"
                     class="SideMenu__trigger__content"
                     @mouseenter.stop="closeSideMenu()"
                 >
@@ -45,8 +45,52 @@
                 <div class="hidden xl:block"></div>
                 <h2 class="SiteCollection__header--title"><span>SPECTACLES WOMEN</span></h2>
                 <div class="SiteCollection__btnGroup">
-                    <button class="SiteCollection__btn md:border-l xl:border-0">COLOUR</button>
-                    <button class="SiteCollection__btn border-l xl:border-r">SHAPE</button>
+                    <div class="SiteCollection__menu">
+                        <button
+                            class="SiteCollection__btn"
+                            aria-haspopup="true"
+                            :aria-expanded="showColors"
+                            @click="toggleShowColors"
+                        >COLOUR</button>
+                        <div v-if="showColors" class="SiteCollection__menu__content" role="menu">
+                            <ul class="grid grid-cols-3 grid-rows-2 gap-3 align-center capitalize">
+                                <li
+                                    v-for="color in colors"
+                                    :key="color.name"
+                                    class="FilterList flex items-center"
+                                    @click="filterCollection"
+                                >
+                                    <span class="FilterList__color">
+                                        <span
+                                            :style="{
+                                                background: color.val.startsWith('#') ? color.val : `url('${requireImage(color.val)}')`
+                                            }"
+                                            class="inline-flex w-full h-full rounded-full mx-w-full"
+                                        ></span>
+                                    </span>
+                                    <span>{{ color.name }}</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="SiteCollection__menu SiteCollection__menu__r">
+                        <button
+                            class="SiteCollection__btn border-l lg:border-r"
+                            aria-haspopup="true"
+                            :aria-expanded="showShapes"
+                            @click="toggleShowShapes"
+                        >SHAPE</button>
+                        <div v-if="showShapes" class="SiteCollection__menu__content" role="menu">
+                            <ul class="grid grid-cols-4 align-center capitalize">
+                                <li
+                                    v-for="shape in shapes"
+                                    :key="shape"
+                                    class="FilterList hover:underline"
+                                    @click="filterCollection"
+                                >{{ shape }}</li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
             </header>
             <div class="SiteCollection__items">
@@ -63,13 +107,14 @@
 
 <script setup lang="ts">
     import { reactive, ref, onMounted, computed } from 'vue';
-    import { CollectionItem } from '~~/utils/types';
+    import { CollectionItem, KeyValuePair } from '~~/utils/types';
     import { useTouch } from '~~/composables/touch';
+    const runtimeConfig = useRuntimeConfig();
 
-    const { isTouchDevice, isMobile } = useTouch();
+    const { isTouchDevice } = useTouch();
 
     let showMenu = ref<boolean>(false);
-    const collectionItems: Array<CollectionItem> = reactive([
+    const collectionItems: CollectionItem[] = reactive([
         {
             name: 'TRAVELLER',
             image: 'https://d32y5z2afvomc1.cloudfront.net/glass_variants/255304141618fba6685e2c93efb2f3f9dc80eece.jpg'
@@ -132,6 +177,18 @@
         },
     ]);
 
+    const colors: KeyValuePair[] = reactive([
+        { name: 'black', val: '#000000' },
+        { name: 'tortoise', val: 'filters_tortoise.png' },
+        { name: 'coloured', val: 'filters_coloured.png' },
+        { name: 'crystal', val: '#ebecf1' },
+        { name: 'dark', val: '#602830' },
+        { name: 'bright', val: '#d58e35' },
+    ]);
+    const shapes = ref<string[]>(['square', 'rectangle', 'round', 'cat-eye']);
+    const showColors = ref<boolean>(false);
+    const showShapes = ref<boolean>(false);
+
     let sideMenuGroup:HTMLElement|null = null;
     let sideMenuTrigger:HTMLElement|null = null;
 
@@ -140,6 +197,20 @@
         sideMenuTrigger = document.querySelector('#sideMenuTrigger');
     });
 
+    const toggleShowColors = (): void => {
+        showColors.value = !showColors.value;
+        // close shapes filter if opened
+        if (showShapes.value) {
+            showShapes.value = false;
+        }
+    };
+    const toggleShowShapes = (): void => {
+        showShapes.value = !showShapes.value;
+        // close colors filter if opened
+        if (showColors.value) {
+            showColors.value = false;
+        }
+    };
     const toggleSideMenu = (): void => {
         if (isTouchDevice.value) return;
         showMenu.value = !showMenu.value;
@@ -152,10 +223,20 @@
             showMenu.value = false;
         }
     };
+    const filterCollection = (): void => {
+
+    };
+    const requireImage = (name: string): string => {
+        return `${runtimeConfig.public.appHost}${runtimeConfig.app.buildAssetsDir}assets/images/${name}`;
+    };
     defineExpose({
         toggleSideMenu,
         openSideMenu,
         closeSideMenu,
+        toggleShowColors,
+        toggleShowShapes,
+        filterCollection,
+        requireImage,
     });
 </script>
 
@@ -178,7 +259,7 @@
         @apply fixed top-0 left-0 z-20 w-full bg-white flex items-center justify-between border-b;
     }
     .SiteHeader__btn {
-        @apply relative tracking-widest h-full text-[11px] sm:text-sm flex items-center justify-center cursor-pointer w-24 sm:w-40;
+        @apply relative tracking-widest h-full text-[11px] sm:text-[13px] flex items-center justify-center cursor-pointer w-24 sm:w-40;
     }
     .SiteHeader__btn__text {
         @apply inline-flex relative;
@@ -207,20 +288,42 @@
     }
     .SiteCollection__header {
         @apply grid grid-rows-2 md:grid-rows-1 md:grid-cols-2 xl:grid-cols-3 border-b;
-        height: calc(calc(var(--site-header-height-xs) + 10px) * 2);
+        height: calc(calc(var(--site-header-height-xs) * 2) + 10px);
     }
     .SiteCollection__header--title {
-        @apply text-lg xl:text-2xl font-black h-full flex justify-center items-center xl:border-l xl:border-r;
+        @apply text-lg xl:text-2xl font-black h-full flex justify-center items-center xl:border-l md:border-r;
     }
     .SiteCollection__btnGroup {
-        @apply flex md:justify-end xl:justify-start border-t md:border-0;
+        @apply flex justify-start border-t md:border-0;
+    }
+    .SiteCollection__menu {
+        @apply relative w-full h-full lg:w-40;
+    }
+    .SiteCollection__menu__content {
+        @apply absolute top-full left-0 z-30 bg-white border-y md:border-x px-3 py-6 w-screen lg:w-80;
+        max-width: 100vw;
+    }
+    .SiteCollection__menu__r .SiteCollection__menu__content {
+        @apply left-auto right-0;
     }
     .SiteCollection__btn {
-        @apply w-full md:w-40 font-bold text-sm;
+        @apply w-full h-full font-bold text-sm;
     }
     @media only screen and (min-width: 768px) {
         .SiteCollection__header {
             height: calc(var(--site-header-height-xl) + 10px);
         }
+        .SiteCollection__menu__content {
+            max-width: 50vw;
+        }
+    }
+    .FilterList {
+        @apply text-center cursor-pointer;
+    }
+    .FilterList__color {
+        @apply inline-flex w-5 h-5 p-px rounded-full mr-2 overflow-hidden;
+    }
+    .FilterList:hover .FilterList__color {
+        @apply border;
     }
 </style>

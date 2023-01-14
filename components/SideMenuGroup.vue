@@ -107,20 +107,4 @@
     .SiteMain__menu--active .SideMenu__group {
         transform: translateX(0);
     }
-    .SideMenu {
-        @apply absolute bg-white w-full h-full border-r border-y;
-        transform: translateX(0);
-        will-change: transform;
-    }
-    .SiteMain__menu--active .SideMenu--active {
-        transform: translateX(0);
-    }
-    .SideMenu__slide-enter-from,
-    .SideMenu__slide-leave-to {
-        transform: translateX(-100%);
-    }
-    .SideMenu__slide-enter-active,
-    .SideMenu__slide-leave-active {
-        transition: all 400ms ease;
-    }
 </style>

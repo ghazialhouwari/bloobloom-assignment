@@ -19,10 +19,10 @@ Visit [https://bloobloom.ghazi.dev/](https://bloobloom.ghazi.dev/) to view the a
     .
     ├── build
     ├── assets
-    │   └── css
-    │       └── tailwind.css        
+    │   ├── css
+    │   └── images
     ├── components
-    │   └── CollectionItemCard.vue
+    │   └── ...
     ├── pages
     │   └── index.vue
     ├── utils

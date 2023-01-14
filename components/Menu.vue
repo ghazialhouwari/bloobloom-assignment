@@ -66,6 +66,22 @@
 </script>
 
 <style>
+    .SideMenu {
+        @apply absolute bg-white w-full h-full border-r border-y;
+        transform: translateX(0);
+        will-change: transform;
+    }
+    .SiteMain__menu--active .SideMenu--active {
+        transform: translateX(0);
+    }
+    .SideMenu__slide-enter-from,
+    .SideMenu__slide-leave-to {
+        transform: translateX(-100%);
+    }
+    .SideMenu__slide-enter-active,
+    .SideMenu__slide-leave-active {
+        transition: all 400ms ease;
+    }
     .MenuList__item {
         @apply h-[60px] flex items-center justify-between px-5 border-b cursor-pointer transition-colors duration-75 ease-in;
     }

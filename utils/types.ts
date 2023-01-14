@@ -13,3 +13,8 @@ export interface CollectionMenu {
     name: string,
     subMenu?: CollectionMenu[]
 }
+
+export interface KeyValuePair {
+    name: string,
+    val: string,
+}
