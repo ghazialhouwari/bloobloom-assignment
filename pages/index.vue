@@ -4,12 +4,21 @@
         <header class="SiteHeader">
             <button
                 id="sideMenuTrigger"
-                class="SiteHeader__btn SideMenu__trigger"
+                class="SiteHeader__btn SideMenu__trigger border-r md:border-0"
                 @mouseenter="openSideMenu"
                 @mouseleave="closeSideMenu"
                 @click="toggleSideMenu"
             >
-                <span class="SiteHeader__btn--text SideMenu__trigger--text">MENU</span>
+                <span
+                    v-if="isTouchDevice && showMenu && isMobile"
+                    class="SideMenu__trigger__content"
+                    @mouseenter.stop="closeSideMenu()"
+                >
+                    <Icon name="mdi:close" size="24px" />
+                </span>
+                <span v-else class="SideMenu__trigger__content">
+                    <span class="SiteHeader__btn__text SideMenu__trigger__text">MENU</span>
+                </span>
             </button>
             <h1 class="SiteHeader__logo">
                 <NuxtLink to="/" class="SiteHeader__logoLink w-full inline-flex">
@@ -19,7 +28,7 @@
             <a
                 target="_blank"
                 rel="noopener"
-                class="SiteHeader__btn Github__btn"
+                class="SiteHeader__btn Github__btn border-l md:border-0"
                 href="https://github.com/ghazialhouwari/bloobloom-assignment"
             >
                 <Icon name="mdi:github" size="26px" />
@@ -33,12 +42,12 @@
         <!-- Collection Items -->
         <section class="SiteCollection">
             <header class="SiteCollection__header">
-                <div class="SiteSpacer w-1/3"></div>
+                <div class="hidden xl:block"></div>
                 <h2 class="SiteCollection__header--title"><span>SPECTACLES WOMEN</span></h2>
-                <button class="SiteHeader__btn"><span class="SiteHeader__btn--text">COLOUR</span></button>
-                <span class="SiteDivider__horizontal"></span>
-                <button class="SiteHeader__btn"><span class="SiteHeader__btn--text">SHAPE</span></button>
-                <span class="SiteDivider__horizontal"></span>
+                <div class="SiteCollection__btnGroup">
+                    <button class="SiteCollection__btn md:border-l xl:border-0">COLOUR</button>
+                    <button class="SiteCollection__btn border-l xl:border-r">SHAPE</button>
+                </div>
             </header>
             <div class="SiteCollection__items">
                 <CollectionItemCard
@@ -53,8 +62,11 @@
 </template>
 
 <script setup lang="ts">
-    import { reactive, ref, onMounted } from 'vue';
+    import { reactive, ref, onMounted, computed } from 'vue';
     import { CollectionItem } from '~~/utils/types';
+    import { useTouch } from '~~/composables/touch';
+
+    const { isTouchDevice, isMobile } = useTouch();
 
     let showMenu = ref<boolean>(false);
     const collectionItems: Array<CollectionItem> = reactive([
@@ -129,13 +141,14 @@
     });
 
     const toggleSideMenu = (): void => {
+        if (isTouchDevice.value) return;
         showMenu.value = !showMenu.value;
     };
     const openSideMenu = (): void => {
         showMenu.value = true;
     };
-    const closeSideMenu = (evt: MouseEvent): void => {
-        if (!sideMenuTrigger?.contains(evt.relatedTarget as Node) && !sideMenuGroup?.contains(evt.relatedTarget as Node)) {
+    const closeSideMenu = (evt: MouseEvent|null = null): void => {
+        if (!evt || (!sideMenuTrigger?.contains(evt.relatedTarget as Node) && !sideMenuGroup?.contains(evt.relatedTarget as Node))) {
             showMenu.value = false;
         }
     };
@@ -148,55 +161,66 @@
 
 <style>
     .SiteMain {
-        padding-top: 50px;
-    }
-    .SiteHeader, .SiteCollection__header {
-        height: 50px;
+        padding-top: var(--site-header-height-xs);
     }
     .SiteHeader {
-        @apply fixed top-0 left-0 z-20 w-full bg-white flex items-center justify-between border-b border-black;
+        height: var(--site-header-height-xs);
+    }
+    @media only screen and (min-width: 1280px) {
+        .SiteHeader {
+            height: var(--site-header-height-xl);
+        }
+        .SiteMain {
+            padding-top: var(--site-header-height-xl);
+        }
+    }
+    .SiteHeader {
+        @apply fixed top-0 left-0 z-20 w-full bg-white flex items-center justify-between border-b;
     }
     .SiteHeader__btn {
-        @apply relative tracking-widest h-full w-40 text-sm flex items-center justify-center cursor-pointer;
+        @apply relative tracking-widest h-full text-[11px] sm:text-sm flex items-center justify-center cursor-pointer w-24 sm:w-40;
     }
-    .SiteHeader__btn--text {
+    .SiteHeader__btn__text {
         @apply inline-flex relative;
     }
-    .SiteHeader__btn--text:before {
-        @apply absolute bottom-[-5px] left-0 w-full h-[3px] bg-black;
-        content: '';
-        transform: scaleX(0);
-        will-change: transform;
-        transition: transform 400ms ease;
+    .SideMenu__trigger__content {
+        @apply inline-flex w-full h-full items-center justify-center;
     }
-    .SiteHeader__btn:hover .SiteHeader__btn--text:before,
-    .SiteMain__menu--active .SideMenu__trigger--text:before {
-        transform: scaleX(1);
+    @media only screen and (min-width: 768px) {
+        .SiteHeader__btn__text:before {
+            @apply absolute bottom-[-5px] left-0 w-full h-[3px] bg-black;
+            content: '';
+            transform: scaleX(0);
+            will-change: transform;
+            transition: transform 400ms ease;
+        }
+        .SiteHeader__btn:hover .SiteHeader__btn__text:before,
+        .SiteMain__menu--active .SideMenu__trigger__text:before {
+            transform: scaleX(1);
+        }
     }
     .SiteHeader__logo {
-        @apply flex items-center;
-        max-width: 138px;
+        @apply flex items-center max-w-[110px] xl:max-w-[138px];
     }
     .Github__btn {
         font-family: Arial, Helvetica, sans-serif;
     }
     .SiteCollection__header {
-        @apply flex items-center border-b border-black;
+        @apply grid grid-rows-2 md:grid-rows-1 md:grid-cols-2 xl:grid-cols-3 border-b;
+        height: calc(calc(var(--site-header-height-xs) + 10px) * 2);
     }
     .SiteCollection__header--title {
-        @apply w-1/3 text-2xl font-black h-full flex justify-center items-center border-l border-r border-black;
+        @apply text-lg xl:text-2xl font-black h-full flex justify-center items-center xl:border-l xl:border-r;
     }
-    .SiteCollection__items {
-        @apply grid;
-        grid-template-columns: repeat(3, 1fr);
+    .SiteCollection__btnGroup {
+        @apply flex md:justify-end xl:justify-start border-t md:border-0;
     }
-    .SiteCollection__item {
-        @apply relative border-b border-black;
+    .SiteCollection__btn {
+        @apply w-full md:w-40 font-bold text-sm;
     }
-    .SiteCollection__item--img {
-        @apply object-cover;
-    }
-    .SiteCollection__item--title {
-        @apply absolute top-10 w-full text-center text-2xl z-10;
+    @media only screen and (min-width: 768px) {
+        .SiteCollection__header {
+            height: calc(var(--site-header-height-xl) + 10px);
+        }
     }
 </style>

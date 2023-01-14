@@ -19,6 +19,7 @@ module.exports = {
                 }
             },
         },
+        borderColor: '#000',
     },
     plugins: [require("@headlessui/tailwindcss")],
 };

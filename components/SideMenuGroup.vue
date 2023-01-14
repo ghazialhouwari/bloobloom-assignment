@@ -90,19 +90,25 @@
 <style>
     .SideMenu__group {
         @apply fixed left-0 z-20 max-w-full;
-        top: 49px;
-        width: 481px;
+        top: calc(var(--site-header-height-xs) - 1px);
+        width: var(--site-side-menu-width);
         overscroll-behavior: contain;
-        height: calc(100vh - 49px);
+        height: calc(100vh - calc(var(--site-header-height-xs) - 1px));
         transform: translateX(-100%);
         transition: transform 400ms ease;
         will-change: transform;
+    }
+    @media only screen and (min-width: 1280px) {
+        .SideMenu__group {
+            top: calc(var(--site-header-height-xl) - 1px);
+            height: calc(100vh - calc(var(--site-header-height-xl) - 1px));
+        }
     }
     .SiteMain__menu--active .SideMenu__group {
         transform: translateX(0);
     }
     .SideMenu {
-        @apply absolute bg-white w-full h-full border-r border-y border-black;
+        @apply absolute bg-white w-full h-full border-r border-y;
         transform: translateX(0);
         will-change: transform;
     }

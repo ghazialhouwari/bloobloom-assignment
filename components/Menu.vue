@@ -67,12 +67,12 @@
 
 <style>
     .MenuList__item {
-        @apply h-[60px] flex items-center justify-between px-5 border-b border-black cursor-pointer transition-colors duration-75 ease-in;
+        @apply h-[60px] flex items-center justify-between px-5 border-b cursor-pointer transition-colors duration-75 ease-in;
     }
     .MenuList__item:not(.MenuList__item--back):hover {
         @apply bg-black text-white;
     }
     .MenuList__item__title {
-        @apply uppercase font-bold;
+        @apply text-sm sm:text-base uppercase font-bold;
     }
 </style>

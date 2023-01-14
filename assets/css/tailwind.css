@@ -2,6 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+    --site-header-height-xs: 40px;
+    --site-header-height-xl: 50px;
+    --site-side-menu-width: 481px;
+}
 .SiteDivider__horizontal {
-    @apply border-l border-black h-full inline-flex;
+    @apply border-l h-full inline-flex;
 }
