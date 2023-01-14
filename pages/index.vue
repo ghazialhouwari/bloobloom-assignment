@@ -63,7 +63,7 @@
                                     <span class="FilterList__color">
                                         <span
                                             :style="{
-                                                background: color.val.startsWith('#') ? color.val : `url('${requireImage(color.val)}')`
+                                                background: color.val.startsWith('#') ? color.val : `url('https://d32y5z2afvomc1.cloudfront.net/assets/${color.val}')`
                                             }"
                                             class="inline-flex w-full h-full rounded-full mx-w-full"
                                         ></span>
@@ -109,7 +109,6 @@
     import { reactive, ref, onMounted, computed } from 'vue';
     import { CollectionItem, KeyValuePair } from '~~/utils/types';
     import { useTouch } from '~~/composables/touch';
-    const runtimeConfig = useRuntimeConfig();
 
     const { isTouchDevice } = useTouch();
 
@@ -179,8 +178,8 @@
 
     const colors: KeyValuePair[] = reactive([
         { name: 'black', val: '#000000' },
-        { name: 'tortoise', val: 'filters_tortoise.png' },
-        { name: 'coloured', val: 'filters_coloured.png' },
+        { name: 'tortoise', val: 'filters_tortoise_02.png' },
+        { name: 'coloured', val: 'filters_coloured_03.png' },
         { name: 'crystal', val: '#ebecf1' },
         { name: 'dark', val: '#602830' },
         { name: 'bright', val: '#d58e35' },
@@ -226,9 +225,6 @@
     const filterCollection = (): void => {
 
     };
-    const requireImage = (name: string): string => {
-        return `${runtimeConfig.public.appHost}${runtimeConfig.app.buildAssetsDir}assets/images/${name}`;
-    };
     defineExpose({
         toggleSideMenu,
         openSideMenu,
@@ -236,7 +232,6 @@
         toggleShowColors,
         toggleShowShapes,
         filterCollection,
-        requireImage,
     });
 </script>
 
