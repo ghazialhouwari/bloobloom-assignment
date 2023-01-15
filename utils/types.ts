@@ -3,7 +3,7 @@ export interface CollectionResponse {
     name: string,
     configuration_name: string,
 }
-interface MetaResponse {
+export interface MetaResponse {
     total_count: number,
 }
 
@@ -65,4 +65,11 @@ export interface GlassesResponse {
 export interface KeyValuePair {
     name: string,
     val: string,
+}
+
+export interface PaginationsOptions {
+    number: number,
+    limit: number,
+    offset: number,
+    totalCount: number,
 }

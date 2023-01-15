@@ -96,9 +96,9 @@
                 </div>
             </header>
             <!-- TODO: show loading while it's pending -->
-            <div v-if="!pending" class="SiteGlass__cards">
+            <div ref="glassSection" v-if="!pending" class="SiteGlass__cards">
                 <GlassCard
-                    v-for="(glass, index) in glassesResponse?.glasses"
+                    v-for="(glass, index) in (glassesResponse?.glasses || []).concat(additionalGlasses)"
                     :key="index"
                     :index="index"
                     :glass="glass"
@@ -110,11 +110,14 @@
 </template>
 
 <script setup lang="ts">
-    import { reactive, ref, onMounted } from 'vue';
-    import { GlassesResponse, KeyValuePair } from '~~/utils/types';
+    import { reactive, ref, onMounted, } from 'vue';
+    import { GlassesResponse, Glass, KeyValuePair, PaginationsOptions } from '~~/utils/types';
+    import { getProxyValue } from '~~/utils/functions';
     import { useTouch } from '~~/composables/touch';
+    import { useWindowScroll } from '~~/composables/windowScroll';
 
     const { isTouchDevice } = useTouch();
+    const { scrollY } = useWindowScroll();
     const showMenu = ref<boolean>(false);
     const colours: KeyValuePair[] = reactive([
         { name: 'black', val: '#000000' },
@@ -130,11 +133,25 @@
     const selectedCollection = ref<string>('spectacles-women');
     const showColours = ref<boolean>(false);
     const showShapes = ref<boolean>(false);
-    const pageNumber = ref<number>(1);
+    const paginationOptions = ref<PaginationsOptions>({ number: 1, offset: 0, limit: 12, totalCount: 0});
+    const additionalGlasses: Glass[] = reactive([]);
+    const glassSection = ref<HTMLElement|null>(null)
+    const loadingGlasses = ref<boolean>(false)
 
     // fetch glasses from api
-    const { data: glassesResponse, pending, refresh } = await useLazyFetch<GlassesResponse>(getGlassListingURI, {
+    const { data: glassesResponse, pending, refresh } = useLazyFetch<GlassesResponse>(getGlassListingURI, {
         watch:[selectedColours, selectedShapes, selectedCollection]
+    });
+    // handle get total count on server side
+    const response: GlassesResponse = getProxyValue(glassesResponse.value);
+    updatePaginationOptions(response);
+    // handle get total count on client side
+    watch(glassesResponse, (newGlassesResponse) => {
+        updatePaginationOptions(newGlassesResponse);
+    });
+    // handle lazy load glasses on scrolling to the last glass
+    watch(scrollY, (newscrollY) => {
+        loadMoreGlasses(newscrollY);
     });
 
     // cache side menu and it's trigger
@@ -146,7 +163,7 @@
     });
 
     // Build and return listing uri
-    function getGlassListingURI(): string {
+    function getGlassListingURI(page: number = 1): string {
         // build query params;
         const colourFilters: string[] = selectedColours.map(colour => {
             return `filters[glass_variant_frame_variant_colour_tag_configuration_names][]=${colour}`;
@@ -159,13 +176,25 @@
             'sort[order]=asc',
             'filters[lens_variant_prescriptions][]=fashion',
             'filters[lens_variant_types][]=classic',
-            'page[limit]=12',
-            `page[number]=${pageNumber.value}`,
+            `page[limit]=${paginationOptions.value.limit}`,
+            `page[number]=${page}`,
             ...colourFilters,
             ...shapeFilters,
             'filters[frame_variant_home_trial_available]=false',
         ].join('&');
+
         return `https://api.bloobloom.com/user/v1/sales_channels/website/collections/${selectedCollection.value}/glasses?${queryParams}`;
+    }
+
+    function resetAdditionalGlasses() {
+        paginationOptions.value.number = 1;
+        paginationOptions.value.offset = 0;
+        additionalGlasses.splice(0);
+    }
+
+    function updatePaginationOptions(response: GlassesResponse|null): void {
+        paginationOptions.value.totalCount = response?.meta?.total_count || 0;
+        paginationOptions.value.offset = response?.glasses?.length || 0;
     }
 
     const toggleShowColours = (): void => {
@@ -201,6 +230,7 @@
         } else {
             selectedShapes.push(shape);
         }
+        resetAdditionalGlasses();
     };
     const toggleColourSelection = (colour: string): void => {
         const colourIndex = selectedColours.indexOf(colour);
@@ -209,10 +239,39 @@
         } else {
             selectedColours.push(colour);
         }
+        resetAdditionalGlasses();
     };
     const selectCollection = (link: string): void => {
         selectedCollection.value = link;
         showMenu.value = false;
+        resetAdditionalGlasses();
+    };
+    // lazy loading fetch glasses when the user scroll to the last glass
+    async function loadMoreGlasses (scrollY: number): Promise<void> {
+        if (
+            loadingGlasses.value ||
+            !glassSection.value ||
+            (paginationOptions.value.totalCount <= paginationOptions.value.offset)
+        ) {
+            return;
+        }
+
+        loadingGlasses.value = true;
+        try {
+            // calculate the top offset of the glasses container
+            const padding = 30;
+            const sectionOffset = glassSection.value.offsetTop + glassSection.value.offsetHeight - window.innerHeight - padding;
+            if (scrollY >= sectionOffset) {
+                const response: GlassesResponse = await $fetch(getGlassListingURI(paginationOptions.value.number + 1));
+                additionalGlasses.push(...response.glasses);
+                paginationOptions.value.number++;
+                paginationOptions.value.offset += response.glasses.length;
+            }
+        } catch {
+            // TODO: error handler
+        } finally {
+            loadingGlasses.value = false;
+        }
     };
     defineExpose({
         toggleSideMenu,

@@ -16,8 +16,7 @@ export function useTouch () {
     }
 
     onMounted(() => {
-        isTouchDevice.value = isTouchEnabled();
-        isMobile.value = isMdAndDown();
+        update();
         window.addEventListener('resize', update);
     });
     onUnmounted(() => {
