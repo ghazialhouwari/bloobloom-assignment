@@ -1,6 +1,5 @@
 <template>
     <div 
-        v-if="!pending"
         id="SideMenuGroup"
         class="SideMenu__group"
         @mouseleave="closeSideMenu"
@@ -18,7 +17,6 @@
                 :showMenu="props.showMenu"
                 @pushMenu="pushMenu"
                 @popMenu="popMenu"
-                @selectCollection="link => $emit('selectCollection', link)"
             />
         </TransitionGroup>
     </div>
@@ -27,17 +25,16 @@
 <script setup lang="ts">
     import { reactive, watch } from 'vue';
     import { Collection, CollectionsResponse } from '~~/utils/types';
-    import { getProxyValue } from '~~/utils/functions';
     
     interface Props {
         showMenu: boolean,
+        collectionsResponse: CollectionsResponse|null,
     }
     const props = defineProps<Props>();
-    const emit = defineEmits(['closeSideMenu', 'selectCollection']);
+    const emit = defineEmits(['closeSideMenu']);
 
-    // fetch collection menu data from api then re-format it
-    const { data: collectionsResponse, pending } = await useLazyFetch('https://staging-api.bloobloom.com/user/v1/sales_channels/website/collections');
-    const collections: Collection[] = formatCollections(getProxyValue(collectionsResponse.value));
+    // re-format collections to be used for dynamic menu
+    const collections: Collection[] = formatCollections();
     let sideMenus: Collection[][] = reactive([ collections ]);
     
     watch(() => props.showMenu, (nVal) => {
@@ -47,9 +44,9 @@
     });
     // re-format the collection response to Collection Interface
     // to make dynamic side menu where it's possible to push menus with infinite sub levels (currently supports 2)
-    function formatCollections (collectionsResponse: CollectionsResponse): Collection[] {
+    function formatCollections (): Collection[] {
         let formattedCollections: Collection[] = [];
-        for (let collection of collectionsResponse.collections) {
+        for (let collection of (props.collectionsResponse?.collections || [])) {
             const [type, name] = collection.configuration_name.split('-');
             const collectionIndex: number = formattedCollections.findIndex((item: Collection) => item.name === name);
             const subMenu = {

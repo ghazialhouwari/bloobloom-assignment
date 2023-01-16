@@ -38,8 +38,8 @@
                         v-else
                         tabindex="0"
                         class="MenuList__item"
-                        @click="$emit('selectCollection', item.link)"
-                        @keydown.space.prevent="$emit('selectCollection', item.link)"
+                        @click="selectCollection(item.link)"
+                        @keydown.space.prevent="selectCollection(item.link)"
                     >
                         <div class="MenuList__item__content">
                             <div class="MenuList__item__title">{{ item.name }}</div>
@@ -61,7 +61,15 @@
         showMenu: boolean,
     }
     const props = defineProps<Props>();
-    defineEmits(['pushMenu', 'popMenu', 'selectCollection']);
+
+    const selectCollection = (link: string): void => {
+        navigateTo(`/${link}`);
+    };
+
+    defineEmits(['pushMenu', 'popMenu']);
+    defineExpose({
+        selectCollection,
+    })
 </script>
 
 <style>
