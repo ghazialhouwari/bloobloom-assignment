@@ -4,7 +4,9 @@
         :class="{
             'xl:border-l xl:border-r': props.index % 3 === 1,
             'md:border-r xl:border-0': props.index % 2 === 0,
-            'SiteGlass__card--loading': !componentLoaded,
+            'SiteGlass__card__lastSingle': (props.index === props.length - 1 && props.length % 2 !== 0),
+            'xl:SiteGlass__card__lastSingle': (props.index === props.length - 1 && props.length % 3 !== 0),
+            'SiteGlass__card--loading': !componentLoaded && !imgLoaded,
         }"
     >
         <h3 class="SiteGlass__card--title">{{ props.glass.name }}</h3>
@@ -26,16 +28,26 @@
             <img
                 v-if="!componentLoaded && !imgLoaded"
                 class="SiteGlass__card__img SiteGlass__cardImg__placeholder"
-                src="/sunglasses.svg"
+                src="/images/sunglasses.svg"
                 alt="loading sunglasses placeholder"
                 width="400"
                 height="300"
             />
         </TransitionGroup>
-        <div class="flex justify-between items-center absolute bottom-0 left-0 w-full">
-            <button class="border px-4 py-2 uppercase" @click="showPrev">prev</button>
-            <button class="border px-4 py-2 uppercase" @click="showNext">next</button>
-        </div>
+        <button
+            class="Carousel__controls Carousel__controls__prev px-4 py-2 uppercase"
+            aria-label="Previous Image"
+            @click="showPrev"
+        >
+            <Icon name="mdi:chevron-left" size="30px" class="text-slate-500 xl:opacity-0" />
+        </button>
+        <button
+            class="Carousel__controls Carousel__controls__next px-4 py-2 uppercase"
+            aria-label="Next Image"
+            @click="showNext"
+        >
+            <Icon name="mdi:chevron-right" size="30px" class="text-slate-500 xl:opacity-0" />
+        </button>
     </div>
 </template>
 
@@ -46,6 +58,7 @@
     interface Props {
         glass: Glass,
         index: number,
+        length: number,
     }
     const props = withDefaults(defineProps<Props>(), {});
     let activeMedia = ref<number>(0);
@@ -90,8 +103,17 @@
         @apply relative border-b aspect-[4/3];
         background: #f6f6f4;
     }
-    .SiteGlass__card:last-of-type {
-        @apply border-r;
+    @media only screen and (min-width: 768px) {
+        .SiteGlass__card__lastSingle:after {
+            content: '';
+            @apply block absolute top-0 bottom-0 left-full w-px bg-black;
+        }
+    }
+    @media only screen and (min-width: 1280px) {
+        .xl\:SiteGlass__card__lastSingle:after {
+            content: '';
+            @apply block absolute top-0 bottom-0 left-full w-px bg-black;
+        }
     }
     .SiteGlass__card--title {
         @apply absolute top-5 w-full text-center text-base lg:text-xl xl:text-2xl z-10;
@@ -131,5 +153,22 @@
     .SiteGlass__cardImg__fade-enter-active,
     .SiteGlass__cardImg__fade-leave-active {
         transition: all 500ms ease;
+    }
+    .Carousel__controls {
+        @apply absolute top-0 bottom-0 w-20 flex items-center justify-center;
+    }
+    .Carousel__controls__prev {
+        @apply left-0;
+    }
+    .Carousel__controls__next {
+        @apply right-0;
+    }
+    @media only screen and (min-width: 1280px) {
+        .Carousel__controls__prev:hover {
+            cursor: url('/images/arrow-left.svg'), pointer;
+        }
+        .Carousel__controls__next:hover {
+            cursor: url('/images/arrow-right.svg'), pointer;
+        }
     }
 </style>
