@@ -1,14 +1,13 @@
 <template>
     <div class="SideMenu">
-        <div role="list" class="MenuList v-sheet">
-            <div role="listbox" class="MenuList__group">
-                <div
+        <div class="MenuList v-sheet">
+            <ul class="MenuList__group" area-label="Navigate collections">
+                <li
                     v-if="isSubMenu"
-                    @click="$emit('popMenu')"
-                    :tabindex="showMenu ? 1 : -1"
-                    role="option"
-                    aria-selected="false"
+                    tabindex="0"
                     class="MenuList__item MenuList__item--back"
+                    @click="$emit('popMenu')"
+                    @keydown.space.prevent="$emit('popMenu')"
                 >
                     <div class="MenuList__item__icon">
                         <Icon name="mdi:chevron-left" size="30px" />
@@ -16,18 +15,17 @@
                     <div class="MenuList__item__content">
                         <div class="MenuList__item__title">Go back</div>
                     </div>
-                </div>
+                </li>
                 <template
                     v-for="item of props.menu"
                     :key="item.name"
                 >
-                    <div
+                    <li
                         v-if="item.subMenu.length"
-                        :tabindex="props.showMenu ? 1 : -1"
-                        role="option"
-                        aria-selected="false"
+                        tabindex="0"
                         class="MenuList__item"
                         @click="$emit('pushMenu', item.subMenu)"
+                        @keydown.space.prevent="$emit('pushMenu', item.subMenu)"
                     >
                         <div class="MenuList__item__content">
                             <div class="MenuList__item__title">{{ item.name }}</div>
@@ -35,21 +33,20 @@
                         <div class="MenuList__item__icon">
                             <Icon name="mdi:chevron-right" size="30px" />
                         </div>
-                    </div>
-                    <div
+                    </li>
+                    <li
                         v-else
                         tabindex="0"
-                        role="option"
-                        aria-selected="false"
                         class="MenuList__item"
                         @click="$emit('selectCollection', item.link)"
+                        @keydown.space.prevent="$emit('selectCollection', item.link)"
                     >
                         <div class="MenuList__item__content">
                             <div class="MenuList__item__title">{{ item.name }}</div>
                         </div>
-                    </div>
+                    </li>
                 </template>
-            </div>
+            </ul>
         </div>
     </div>
 </template>
@@ -87,7 +84,8 @@
     .MenuList__item {
         @apply h-[60px] flex items-center justify-between px-5 border-b cursor-pointer transition-colors duration-75 ease-in;
     }
-    .MenuList__item:not(.MenuList__item--back):hover {
+    .MenuList__item:not(.MenuList__item--back):hover,
+    .MenuList__item:not(.MenuList__item--back):focus {
         @apply bg-black text-white;
     }
     .MenuList__item__title {
